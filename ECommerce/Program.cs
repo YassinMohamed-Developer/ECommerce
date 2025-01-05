@@ -21,8 +21,15 @@ namespace ECommerce
             // Add services to the container.
             builder.Services.AddControllersWithViews();
             builder.Services.AddRazorPages();
-            builder.Services.AddDbContext<ECommerceContext>(option =>
-                option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+            builder.Services.AddDbContext<ECommerceContext>(options =>
+            options.UseSqlServer(
+            builder.Configuration.GetConnectionString("DefaultConnection"),
+            sqlOptions => sqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 5, // Number of retry attempts
+                maxRetryDelay: TimeSpan.FromSeconds(30), // Maximum delay between retries
+                errorNumbersToAdd: null // Additional SQL error numbers to retry on
+            )
+            )       
             );
 
             builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
@@ -39,6 +46,8 @@ namespace ECommerce
             {
                 options.AppId = "1512936369395470";
                 options.AppSecret = "9c24bb2326c6abda13a2d33d8c5d649a";
+                options.CallbackPath = "/signin-facebook";
+
             });
 
             builder.Services.AddDistributedMemoryCache();
@@ -69,13 +78,14 @@ namespace ECommerce
             StripeConfiguration.ApiKey = builder.Configuration.GetSection("Stripe:SecretKey").Get<string>();
             app.UseRouting();
             app.UseAuthentication();
+            
             app.UseAuthorization();
             app.UseSession();
             SeedData();
             app.MapRazorPages();
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{area=Customer}/{controller=Home}/{action=Index}/{id?}");
+                pattern: "/{area=Customer}/{controller=Home}/{action=Index}/{id?}");
 
             app.Run(); 
 

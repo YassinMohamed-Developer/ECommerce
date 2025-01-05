@@ -51,13 +51,19 @@ namespace ECommerce.Data.DBInitializer
                     UserName = "YassinMohamed@gmail.com",
                     Email = "ym9807770@gmail.com",
                     Name = "Yassin Moahmed",
-                    PhoneNumber = "01110972184",
+                    PhoneNumber = "01060459123",
                     StreetAddress = "15 st",
                     State = "IL",
                     PostalCode = "23422",
                     City = "Cairo"
-                },"E123@yassin");
+                },"E123@yassin").GetAwaiter().GetResult();
+
+                Applicationuser applicationuser = _context.Applicationusers.FirstOrDefault(x => x.Email == "ym9807770@gmail.com");
+                _userManager.AddToRoleAsync(applicationuser, SD.Role_Admin).GetAwaiter().GetResult();
+
             }
+                return;
+
         }
     }
 }
